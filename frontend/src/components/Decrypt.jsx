@@ -8,13 +8,24 @@ const Decrypt = () => {
   const [decryptedFile, setDecryptedFile] = useState("");
 
   const handleDecrypt = async () => {
+    if (!cid || !key) {
+      alert("CID dan key harus diisi!");
+      return;
+    }
+
     const encryptedData = await fetchFromIPFS(cid);
-    if (!encryptedData) return alert("Gagal mengambil data dari IPFS!");
+    if (!encryptedData) {
+      alert("Gagal mengambil data dari IPFS! Pastikan CID benar.");
+      return;
+    }
 
     const decrypted = decryptFile(encryptedData, key);
-    if (!decrypted) return alert("Key salah atau dekripsi gagal!");
+    if (!decrypted) {
+      alert("Key salah atau dekripsi gagal!");
+      return;
+    }
 
-    setDecryptedFile(decrypted);
+    setDecryptedFile(`data: ${decrypted}`); // Tambahkan label "data: "
   };
 
   return (
@@ -23,18 +34,21 @@ const Decrypt = () => {
       <input
         type="text"
         placeholder="Masukkan CID"
+        value={cid}
         onChange={(e) => setCid(e.target.value)}
       />
       <input
         type="password"
         placeholder="Masukkan key"
+        value={key}
         onChange={(e) => setKey(e.target.value)}
       />
       <button onClick={handleDecrypt}>Dekripsi</button>
       {decryptedFile && (
         <div>
           <h3>Hasil Dekripsi:</h3>
-          <p>{decryptedFile}</p>
+          <pre>{decryptedFile}</pre>{" "}
+          {/* Gunakan <pre> agar format tetap rapi */}
         </div>
       )}
     </div>
