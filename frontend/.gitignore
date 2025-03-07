@@ -1,0 +1,53 @@
+# =====================================
+# 🛑 Node.js & Package Management
+# =====================================
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# =====================================
+# 🚀 Build & Caching
+# =====================================
+dist/                 # Folder hasil build dari Vite
+.vite/                # Cache dari Vite
+out/                  # Output folder jika pakai Next.js (opsional)
+.cache/               # Cache build tools
+
+# =====================================
+# 🔑 Environment Variables
+# =====================================
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# =====================================
+# 🛠️ Editor & IDE
+# =====================================
+.vscode/              # Settings khusus VSCode
+.idea/                # Settings untuk JetBrains (WebStorm, IntelliJ)
+*.iml                 # File konfigurasi JetBrains
+
+# =====================================
+# 🔥 Log Files & Debugging
+# =====================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+debug.log
+.DS_Store            # File sistem MacOS (tidak perlu di Git)
+Thumbs.db            # File sistem Windows Explorer
+*.log                # Semua file log
+*.gz                 # File hasil kompresi
+
+# =====================================
+# 🖼️ Image Editor Files
+# =====================================
+*.psd
+*.ai
+*.sketch
+*.xcf
+*.tiff
