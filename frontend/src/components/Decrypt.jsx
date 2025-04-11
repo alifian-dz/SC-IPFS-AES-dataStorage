@@ -6,6 +6,7 @@ const Decrypt = () => {
   const [cid, setCid] = useState("");
   const [key, setKey] = useState("");
   const [decryptedFile, setDecryptedFile] = useState("");
+  const [fileType, setFileType] = useState("");
 
   const handleDecrypt = async () => {
     if (!cid || !key) {
@@ -25,7 +26,30 @@ const Decrypt = () => {
       return;
     }
 
-    setDecryptedFile(`data: ${decrypted}`); // Tambahkan label "data: "
+    const match = decrypted.match(/^data:(.*?);base64,/);
+    const type = match ? match[1] : "text/plain";
+
+    setFileType(type);
+    setDecryptedFile(decrypted);
+  };
+
+  const renderDecryptedOutput = () => {
+    if (fileType.startsWith("text")) {
+      const base64Content = decryptedFile.split(",")[1];
+      const plainText = atob(base64Content);
+      return <pre>{plainText}</pre>;
+    } else if (fileType.startsWith("image")) {
+      return <img src={decryptedFile} alt="Hasil Dekripsi" />;
+    } else {
+      return (
+        <a
+          href={decryptedFile}
+          download={`decrypted.${fileType.split("/")[1]}`}
+        >
+          <button>Download File</button>
+        </a>
+      );
+    }
   };
 
   return (
@@ -44,11 +68,11 @@ const Decrypt = () => {
         onChange={(e) => setKey(e.target.value)}
       />
       <button onClick={handleDecrypt}>Dekripsi</button>
+
       {decryptedFile && (
         <div>
           <h3>Hasil Dekripsi:</h3>
-          <pre>{decryptedFile}</pre>{" "}
-          {/* Gunakan <pre> agar format tetap rapi */}
+          {renderDecryptedOutput()}
         </div>
       )}
     </div>
