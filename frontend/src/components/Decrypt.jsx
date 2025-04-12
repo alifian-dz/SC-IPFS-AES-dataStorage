@@ -7,6 +7,22 @@ const Decrypt = () => {
   const [key, setKey] = useState("");
   const [decryptedFile, setDecryptedFile] = useState("");
   const [fileType, setFileType] = useState("");
+  const [canDisplayText, setCanDisplayText] = useState(false);
+
+  const mimeToExtension = (mime) => {
+    const map = {
+      "application/pdf": "pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        "docx",
+      "application/msword": "doc",
+      "application/vnd.ms-excel": "xls",
+      "text/plain": "txt",
+      "image/png": "png",
+      "image/jpeg": "jpg",
+      "application/zip": "zip",
+    };
+    return map[mime] || "bin"; // fallback ke .bin jika tidak dikenali
+  };
 
   const handleDecrypt = async () => {
     if (!cid || !key) {
@@ -26,29 +42,20 @@ const Decrypt = () => {
       return;
     }
 
-    const match = decrypted.match(/^data:(.*?);base64,/);
-    const type = match ? match[1] : "text/plain";
-
-    setFileType(type);
+    // Deteksi MIME type dari prefix base64
+    const matches = decrypted.match(/^data:([^;]+);base64,/);
+    const mime = matches?.[1] || "";
+    setFileType(mime);
     setDecryptedFile(decrypted);
-  };
 
-  const renderDecryptedOutput = () => {
-    if (fileType.startsWith("text")) {
-      const base64Content = decryptedFile.split(",")[1];
-      const plainText = atob(base64Content);
-      return <pre>{plainText}</pre>;
-    } else if (fileType.startsWith("image")) {
-      return <img src={decryptedFile} alt="Hasil Dekripsi" />;
+    if (mime.startsWith("text/")) {
+      // Convert base64 ke teks biasa
+      const base64Content = decrypted.split(",")[1];
+      const text = atob(base64Content);
+      setCanDisplayText(true);
+      setDecryptedFile(text);
     } else {
-      return (
-        <a
-          href={decryptedFile}
-          download={`decrypted.${fileType.split("/")[1]}`}
-        >
-          <button>Download File</button>
-        </a>
-      );
+      setCanDisplayText(false);
     }
   };
 
@@ -72,7 +79,19 @@ const Decrypt = () => {
       {decryptedFile && (
         <div>
           <h3>Hasil Dekripsi:</h3>
-          {renderDecryptedOutput()}
+          {canDisplayText ? (
+            <pre>{decryptedFile}</pre>
+          ) : (
+            <>
+              <p>File berhasil didekripsi. Silakan unduh:</p>
+              <a
+                href={decryptedFile}
+                download={`decrypted.${mimeToExtension(fileType)}`}
+              >
+                <button>Download File</button>
+              </a>
+            </>
+          )}
         </div>
       )}
     </div>
