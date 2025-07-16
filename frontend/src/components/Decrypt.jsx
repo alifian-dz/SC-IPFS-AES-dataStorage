@@ -5,9 +5,9 @@ import { decryptFile } from "../utils/decryptFile";
 const Decrypt = () => {
   const [cid, setCid] = useState("");
   const [key, setKey] = useState("");
-  const [decryptedFile, setDecryptedFile] = useState("");
+  const [decryptedDataURL, setDecryptedDataURL] = useState("");
   const [fileType, setFileType] = useState("");
-  const [canDisplayText, setCanDisplayText] = useState(false);
+  const [plainText, setPlainText] = useState("");
 
   const mimeToExtension = (mime) => {
     const map = {
@@ -42,20 +42,18 @@ const Decrypt = () => {
       return;
     }
 
-    // Deteksi MIME type dari prefix base64
     const matches = decrypted.match(/^data:([^;]+);base64,/);
     const mime = matches?.[1] || "";
     setFileType(mime);
-    setDecryptedFile(decrypted);
+    setDecryptedDataURL(decrypted);
 
+    // Jika tipe MIME text, tampilkan sebagai teks biasa
     if (mime.startsWith("text/")) {
-      // Convert base64 ke teks biasa
       const base64Content = decrypted.split(",")[1];
       const text = atob(base64Content);
-      setCanDisplayText(true);
-      setDecryptedFile(text);
+      setPlainText(text);
     } else {
-      setCanDisplayText(false);
+      setPlainText(""); // kosongkan jika bukan teks
     }
   };
 
@@ -76,16 +74,27 @@ const Decrypt = () => {
       />
       <button onClick={handleDecrypt}>Dekripsi</button>
 
-      {decryptedFile && (
+      {/* Hasil Dekripsi */}
+      {decryptedDataURL && (
         <div>
           <h3>Hasil Dekripsi:</h3>
-          {canDisplayText ? (
-            <pre>{decryptedFile}</pre>
+          {plainText ? (
+            <>
+              <pre>{plainText}</pre>
+              <a
+                href={`data:text/plain;charset=utf-8,${encodeURIComponent(
+                  plainText
+                )}`}
+                download="decrypted.txt"
+              >
+                <button>Download Teks</button>
+              </a>
+            </>
           ) : (
             <>
               <p>File berhasil didekripsi. Silakan unduh:</p>
               <a
-                href={decryptedFile}
+                href={decryptedDataURL}
                 download={`decrypted.${mimeToExtension(fileType)}`}
               >
                 <button>Download File</button>

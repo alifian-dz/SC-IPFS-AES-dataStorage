@@ -3,43 +3,56 @@ const fs = require("fs");
 const path = require("path");
 
 async function main() {
-  // Ambil kontrak factory
   const FileStorage = await hre.ethers.getContractFactory("FileStorage");
-
-  // Deploy kontrak
   const fileStorage = await FileStorage.deploy();
   await fileStorage.waitForDeployment();
 
-  // Ambil alamat kontrak yang telah dideploy
   const contractAddress = await fileStorage.getAddress();
-  console.log("Contract deployed to:", contractAddress);
+  console.log("✅ Contract deployed to:", contractAddress);
 
-  // Path file .env
-  const envPath = path.join(__dirname, "../.env");
+  // 🔁 Path ke .env di frontend/src
+  const envPath = path.join(__dirname, "../../frontend/src/.env");
 
-  // Periksa apakah .env sudah ada
+  // Buat file .env kalau belum ada
   if (!fs.existsSync(envPath)) {
-    fs.writeFileSync(envPath, ""); // Buat file .env jika belum ada
+    fs.writeFileSync(envPath, "", "utf-8");
   }
 
-  // Baca isi .env yang sudah ada
   let envContent = fs.readFileSync(envPath, "utf-8");
 
-  // Hapus baris lama CONTRACT_ADDRESS jika ada
-  envContent = envContent.replace(/^CONTRACT_ADDRESS=.*$/m, "");
+  // Pisahkan per baris dan update hanya baris VITE_CONTRACT_ADDRESS
+  let lines = envContent.split("\n").filter(Boolean);
+  let found = false;
 
-  // Tambahkan CONTRACT_ADDRESS baru
-  envContent += `\nCONTRACT_ADDRESS=${contractAddress}\n`;
+  lines = lines.map((line) => {
+    if (line.startsWith("VITE_CONTRACT_ADDRESS=")) {
+      found = true;
+      return `VITE_CONTRACT_ADDRESS=${contractAddress}`;
+    }
+    return line;
+  });
 
-  // Tulis kembali ke .env
-  fs.writeFileSync(envPath, envContent.trim(), "utf-8");
+  if (!found) {
+    lines.push(`VITE_CONTRACT_ADDRESS=${contractAddress}`);
+  }
 
-  console.log(".env updated with contract address.");
+  fs.writeFileSync(envPath, lines.join("\n"), "utf-8");
+  console.log("✅ .env updated with VITE_CONTRACT_ADDRESS");
+
+  // 🔁 Salin ABI ke frontend/src/contracts/
+  const abiSrc = path.resolve(
+    __dirname,
+    "../artifacts/contracts/FileStorage.sol/FileStorage.json"
+  );
+  const abiDest = path.resolve(
+    __dirname,
+    "../../frontend/src/contracts/FileStorage.json"
+  );
+  fs.copyFileSync(abiSrc, abiDest);
+  console.log("✅ ABI copied to frontend/src/contracts");
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error("❌ Deployment failed:", error);
+  process.exit(1);
+});

@@ -27,6 +27,13 @@ const Explore = () => {
               <p>
                 <strong>Waktu Unggah:</strong> {file.timestamp}
               </p>
+              <a
+                href={`https://gateway.pinata.cloud/ipfs/${file.cid}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📁 Lihat File
+              </a>
             </li>
           ))}
         </ul>
